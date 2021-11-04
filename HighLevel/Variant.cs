@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -123,6 +124,19 @@ public unsafe struct Variant : IDisposable
 
 public static class VariantExtension
 {
+    public record struct PooledCharArray(char[] Chars, int Length) : IDisposable
+    {
+        public Span<char> AsSpan()
+        {
+            return Chars.AsSpan(0, Length);
+        }
+
+        public void Dispose()
+        {
+            ArrayPool<char>.Shared.Return(Chars);
+        }
+    }
+
     public static bool AsBool(this Variant variant)
     {
         return Unsafe.As<byte, bool>(ref variant.Union);
@@ -150,7 +164,7 @@ public static class VariantExtension
 
     // from a 32bit string
     // ref: https://github.com/godotengine/godot/blob/9e3733612461d9cf9edb19ab29244b0834e2d1b1/core/string/ustring.h#L183
-    public static unsafe string AsString(this Variant variant)
+    public static unsafe PooledCharArray AsPooledCharArray(this Variant variant)
     {
         Span<byte> GetSpan<T>()
             where T : unmanaged
@@ -178,7 +192,7 @@ public static class VariantExtension
                     break;
             }
 
-            if (size == 0)
+            if (size <= 1)
                 return Span<byte>.Empty;
 
             return MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref ptr, size));
@@ -192,13 +206,43 @@ public static class VariantExtension
         // ????????????????????????????????????????????????????????????????????????????????????????????
         var span = OperatingSystem.IsWindows()
             ? GetSpan<short>()[..^2] // skip that garbage at the end
-            : GetSpan<int>();
+            : GetSpan<int>()[..^4]; // skip that garbage at the end (int size)
 
-        return span.IsEmpty
-            ? string.Empty
+        var disposable = new PooledCharArray(ArrayPool<char>.Shared.Rent(span.Length), span.Length);
+
+        var size = span.IsEmpty
+            ? default
             : (OperatingSystem.IsWindows()
                 ? Encoding.Unicode
-                : Encoding.UTF8
-            ).GetString(span);
+                : Encoding.UTF32
+            ).GetChars(span, disposable.AsSpan());
+
+        return disposable with {Length = size};
+    }
+
+    // from a 32bit string
+    // ref: https://github.com/godotengine/godot/blob/9e3733612461d9cf9edb19ab29244b0834e2d1b1/core/string/ustring.h#L183
+    public static unsafe string AsString(this Variant variant)
+    {
+        using var chars = AsPooledCharArray(variant);
+        return new string(chars.AsSpan());
+    }
+
+    public static bool Contains(this Variant variant, ReadOnlySpan<char> str)
+    {
+        using var chars = AsPooledCharArray(variant);
+        return chars.AsSpan().IndexOf(str) >= 0;
+    }
+
+    public static bool StartsWith(this Variant variant, ReadOnlySpan<char> str)
+    {
+        using var chars = AsPooledCharArray(variant);
+        return chars.AsSpan().StartsWith(str);
+    }
+
+    public static bool SequenceEquals(this Variant variant, ReadOnlySpan<char> str)
+    {
+        using var chars = AsPooledCharArray(variant);
+        return chars.AsSpan().SequenceEqual(str);
     }
 }
