@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using GodotCLR;
-
+using GodotCLR.HighLevel;
 using Proxy = GodotCLR.Godot.Proxy;
 
 namespace RustTest
@@ -28,6 +28,20 @@ namespace RustTest
         public void SetPosition3D(in Vector3 vector)
         {
             Proxy.SetPosition3D(ref *_internal, vector);
+        }
+
+        public Variant Call(string name, VariantArgBuilder args = default, bool autoDispose = true)
+        {
+            var span = args.AsSpan();
+            var result = Proxy.CallProxyMethod(ref *_internal, name, span);
+
+            if (autoDispose)
+            {
+                foreach (var variant in span)
+                    variant.Dispose();
+            }
+
+            return result;
         }
 
         public void SetProperty(string name, ref Variant variant, bool autoDispose = true)

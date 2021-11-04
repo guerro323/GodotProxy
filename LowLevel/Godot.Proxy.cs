@@ -15,47 +15,27 @@ namespace GodotCLR
         {
             public static ref ProxyInternal CreateProxy(ReadOnlySpan<char> name, ReadOnlySpan<char> resource)
             {
-                var nameArray = ArrayPool<byte>.Shared.Rent(name.Length);
-                var resourceArray = ArrayPool<byte>.Shared.Rent(resource.Length);
-                try
-                {
-                    Span<byte> nameOutput = nameArray.AsSpan(0, name.Length);
-                    Span<byte> resourceOutput = resourceArray.AsSpan(0, resource.Length);
-                    Encoding.UTF8.GetBytes(name, nameOutput);
-                    Encoding.UTF8.GetBytes(resource, resourceOutput);
-                    return ref *proxy.create_proxy(Host, to_ptr(MemoryMarshal.Cast<byte, char>(nameOutput)),
-                        to_ptr(MemoryMarshal.Cast<byte, char>(resourceOutput)));
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(nameArray);
-                    ArrayPool<byte>.Shared.Return(resourceArray);
-                }
+                using var nameArray = new Utf8Array(name);
+                using var resourceArray = new Utf8Array(resource);
+                return ref *proxy.create_proxy(Host, to_ptr(nameArray.CharSpan), to_ptr(resourceArray.CharSpan));
             }
 
             public static void SetProxyProperty(ref ProxyInternal proxyObj, ReadOnlySpan<char> path, ref Variant value)
             {
                 var proxyPtr = (ProxyInternal*) Unsafe.AsPointer(ref proxyObj);
                 var variantPtr = (Variant*) Unsafe.AsPointer(ref value);
-                if (path.Length < 128)
-                {
-                    Span<byte> output = stackalloc byte[path.Length];
-                    Encoding.UTF8.GetBytes(path, output);
-                    proxy.set_proxy_property(proxyPtr, to_ptr(output), variantPtr);
-                    return;
-                }
 
-                var array = ArrayPool<byte>.Shared.Rent(path.Length);
-                try
-                {
-                    Span<byte> output = array.AsSpan(0, path.Length);
-                    Encoding.UTF8.GetBytes(path, output);
-                    proxy.set_proxy_property(proxyPtr, to_ptr(output), variantPtr);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(array);
-                }
+                using var pathArray = new Utf8Array(path);
+                proxy.set_proxy_property(proxyPtr, to_ptr(pathArray.ByteSpan), variantPtr);
+            }
+
+            public static Variant CallProxyMethod(ref ProxyInternal proxyObj, ReadOnlySpan<char> path, Span<Variant> args)
+            {
+                var proxyPtr = (ProxyInternal*) Unsafe.AsPointer(ref proxyObj);
+                var variantPtr = (Variant*) Unsafe.AsPointer(ref MemoryMarshal.GetReference(args));
+
+                using var pathArray = new Utf8Array(path);
+                return proxy.call_proxy_method(proxyPtr, to_ptr(pathArray.ByteSpan), args.Length, variantPtr);
             }
 
             public static void FreeProxy(ProxyInternal* proxyObj)
