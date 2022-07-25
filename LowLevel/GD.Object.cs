@@ -50,7 +50,7 @@ public partial class GD
             span[0].SetString(property);
             span[1] = variant;
             
-            InvokeVariant(call, (void*) objectPtr, span, out _);
+            InvokeVariant(set, (void*) objectPtr, span, out _);
         }
         
         public static Variant Get(IntPtr objectPtr, ReadOnlySpan<char> property)
@@ -60,7 +60,7 @@ public partial class GD
             Span<Variant> span = stackalloc Variant[1];
             span[0].SetString(property);
 
-            return InvokeVariant(call, (void*) objectPtr, span, out _);
+            return InvokeVariant(get, (void*) objectPtr, span, out _);
         }
 
         internal static void GdLoad()
