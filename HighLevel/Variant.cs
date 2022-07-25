@@ -1,15 +1,18 @@
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
+using GodotCLR.NativeStructs;
 
 namespace GodotCLR;
 
 [StructLayout(LayoutKind.Explicit, Size = 16 + sizeof(long) /* Same size as godot_variant */)]
-public unsafe struct Variant : IDisposable
+public unsafe struct Variant
 {
     public enum EType
     {
@@ -64,61 +67,122 @@ public unsafe struct Variant : IDisposable
 
     [FieldOffset(8)] public byte Union;
 
+    public ref bool Bool
+    {
+        get
+        {
+            Debug.Assert(Type == EType.BOOL, "Type == EType.BOOL");
+            return ref Unsafe.AsRef<bool>(Unsafe.AsPointer(ref Union));
+        }
+    }
+    
+    public ref long Int
+    {
+        get
+        {
+            Debug.Assert(Type == EType.INT, "Type == EType.INT");
+            return ref Unsafe.AsRef<long>(Unsafe.AsPointer(ref Union));
+        }
+    }
+    
+    public ref double Float
+    {
+        get
+        {
+            Debug.Assert(Type == EType.FLOAT, "Type == EType.FLOAT");
+            return ref Unsafe.AsRef<double>(Unsafe.AsPointer(ref Union));
+        }
+    }
+    
+    public ref Vector2 Vector2 
+    {
+        get
+        {
+            Debug.Assert(Type == EType.VECTOR2, "Type == EType.VECTOR2");
+            return ref Unsafe.AsRef<Vector2>(Unsafe.AsPointer(ref Union));
+        }
+    }
+    
+    public ref Vector3 Vector3
+    {
+        get
+        {
+            Debug.Assert(Type == EType.VECTOR3, "Type == EType.VECTOR3");
+            return ref Unsafe.AsRef<Vector3>(Unsafe.AsPointer(ref Union));
+        }
+    }
+    
+    public ref Quaternion Quaternion
+    {
+        get
+        {
+            Debug.Assert(Type == EType.QUATERNION, "Type == EType.QUATERNION");
+            return ref Unsafe.AsRef<Quaternion>(Unsafe.AsPointer(ref Union));
+        }
+    }
+
+    public IntPtr Object
+    {
+        get
+        {
+            Debug.Assert(Type == EType.OBJECT, "Type == EType.OBJECT");
+            return Unsafe.AsRef<ObjectData>(Unsafe.AsPointer(ref Union)).Pointer;
+        }
+        set
+        {
+            Debug.Assert(Type == EType.OBJECT, "Type == EType.OBJECT");
+            ref var data = ref Unsafe.AsRef<ObjectData>(Unsafe.AsPointer(ref Union));
+            data.Id = Native.Interface.object_get_instance_id(value.ToPointer());
+            data.Pointer = value;
+        }
+    }
+
+    public struct ObjectData
+    {
+        public nuint Id;
+        public IntPtr Pointer;
+    }
+
     public override string ToString()
     {
         var additional = Type switch
         {
-            EType.NIL => "null",
-            EType.BOOL => this.AsBool().ToString(),
-            EType.INT => this.AsInt().ToString(),
-            EType.FLOAT => this.AsReal().ToString(CultureInfo.InvariantCulture),
+            EType.NIL => "nil",
+            EType.BOOL => Bool.ToString(),
+            EType.INT => Int.ToString(),
+            EType.FLOAT => Float.ToString(CultureInfo.InvariantCulture),
             EType.STRING => this.AsString(),
-            EType.VECTOR2 => this.AsVector2().ToString(),
-            EType.VECTOR3 => this.AsVector3().ToString(),
-            _ => "<<not implemented>>"
+            EType.VECTOR2 => Vector2.ToString(),
+            EType.VECTOR3 => Vector3.ToString(),
+            _ => variantToString(Unsafe.AsPointer(ref this))
         };
+
+        string variantToString(void* t)
+        {
+            godot_string gdString;
+            Native.Interface.variant_stringify(t, &gdString);
+            Debug.Assert(gdString.Buffer != IntPtr.Zero, "gdString.Buffer != null");
+
+            return gdString.ToString();
+        }
 
         return $"Variant({Type}, {additional})";
     }
 
-    public void Dispose()
+    public void SetString(ReadOnlySpan<char> str)
     {
-        Native.variant.godot_variant_destroy((Variant*) Unsafe.AsPointer(ref this));
+        /*using var utf8 = new Utf8Array(str);
+
+        void* ptr = null;
+        Native.Interface.string_new_with_utf8_chars(&ptr, (sbyte*) Unsafe.AsPointer(ref utf8.FirstChar));
+        Unsafe.As<byte, IntPtr>(ref Union) = (IntPtr) ptr;*/
+        Type = EType.STRING;
+        Unsafe.As<byte, godot_string>(ref Union) = new godot_string(str);
     }
 
-    public static void New(long value, out Variant variant)
+    public Variant(ReadOnlySpan<char> span)
     {
-        variant = default;
-        Native.variant.godot_variant_new_int((Variant*) Unsafe.AsPointer(ref variant), value);
-    }
-
-    public static void New(double value, out Variant variant)
-    {
-        variant = default;
-        Native.variant.godot_variant_new_real((Variant*) Unsafe.AsPointer(ref variant), value);
-    }
-
-    public static void New(ReadOnlySpan<char> str, out Variant variant)
-    {
-        using var utf8 = new Utf8Array(str);
-
-        variant = default;
-        Native.variant.godot_variant_new_string((Variant*) Unsafe.AsPointer(ref variant),
-            (char*) Unsafe.AsPointer(ref utf8.FirstChar));
-    }
-
-    public static void New(Vector2 value, out Variant variant)
-    {
-        variant = default;
-        Native.variant.godot_variant_new_vector2((Variant*) Unsafe.AsPointer(ref variant),
-            (Vector2*) Unsafe.AsPointer(ref value));
-    }
-
-    public static void New(Vector3 value, out Variant variant)
-    {
-        variant = default;
-        Native.variant.godot_variant_new_vector3((Variant*) Unsafe.AsPointer(ref variant),
-            (Vector3*) Unsafe.AsPointer(ref value));
+        SetString(span);
     }
 }
 
@@ -135,31 +199,6 @@ public static class VariantExtension
         {
             ArrayPool<char>.Shared.Return(Chars);
         }
-    }
-
-    public static bool AsBool(this Variant variant)
-    {
-        return Unsafe.As<byte, bool>(ref variant.Union);
-    }
-
-    public static long AsInt(this Variant variant)
-    {
-        return Unsafe.As<byte, int>(ref variant.Union);
-    }
-
-    public static double AsReal(this Variant variant)
-    {
-        return Unsafe.As<byte, double>(ref variant.Union);
-    }
-
-    public static Vector2 AsVector2(this Variant variant)
-    {
-        return Unsafe.As<byte, Vector2>(ref variant.Union);
-    }
-
-    public static Vector3 AsVector3(this Variant variant)
-    {
-        return Unsafe.As<byte, Vector3>(ref variant.Union);
     }
 
     // from a 32bit string

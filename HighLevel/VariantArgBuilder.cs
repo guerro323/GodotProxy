@@ -23,32 +23,29 @@ namespace GodotCLR.HighLevel
 
         public void Add(long value)
         {
-            Variant.New(value, out var variant);
-            Add(variant);
+            Add(new Variant {Type = Variant.EType.INT, Int = value});
         }
 
         public void Add(double value)
         {
-            Variant.New(value, out var variant);
-            Add(variant);
+            Add(new Variant {Type = Variant.EType.FLOAT, Float = value});
         }
         
         public void Add(string value)
         {
-            Variant.New(value, out var variant);
+            var variant = new Variant {Type = Variant.EType.STRING};
+            variant.SetString(value);
             Add(variant);
         }
         
         public void Add(Vector2 value)
         {
-            Variant.New(value, out var variant);
-            Add(variant);
+            Add(new Variant {Type = Variant.EType.VECTOR2, Vector2 = value});
         }
         
         public void Add(Vector3 value)
         {
-            Variant.New(value, out var variant);
-            Add(variant);
+            Add(new Variant {Type = Variant.EType.VECTOR3, Vector3 = value});
         }
 
         public Span<Variant> AsSpan()

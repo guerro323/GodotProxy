@@ -9,7 +9,7 @@ using static GodotCLR.Native;
 
 namespace GodotCLR
 {
-    public unsafe partial class Godot
+    /*public unsafe partial class Godot
     {
         public static class Proxy
         {
@@ -53,5 +53,5 @@ namespace GodotCLR
                 proxy.set_position_3d_proxy(ref proxyInternal, in vector);
             }
         }
-    }
+    }*/
 }

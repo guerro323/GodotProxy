@@ -27,10 +27,11 @@ namespace GodotCLR
         public Span<byte> ByteSpan => _array.AsSpan(0, _byteCount);
 
         public unsafe ref char FirstChar => ref Unsafe.As<byte, char>(ref MemoryMarshal.GetArrayDataReference(_array));
+        public unsafe void* Pointer => Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(_array));
 
         public void Dispose()
         {
-            ArrayPool<byte>.Shared.Return(_array);
+            ArrayPool<byte>.Shared.Return(_array, true);
         }
     }
 }
