@@ -66,9 +66,9 @@ public partial class GD
         internal static void GdLoad()
         {
             call_deferred = GetMethodBind(ClassName, nameof(call_deferred), 135374088);
-            call = GetMethodBind(ClassName, nameof(call_deferred), 135374088);
-            set = GetMethodBind(ClassName, nameof(call_deferred), 134224103);
-            get = GetMethodBind(ClassName, nameof(call_deferred), 135374120);
+            call = GetMethodBind(ClassName, nameof(call), 135374088);
+            set = GetMethodBind(ClassName, nameof(set), 134224103);
+            get = GetMethodBind(ClassName, nameof(get), 135374120);
         }
     }
 }
