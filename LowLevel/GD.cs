@@ -29,6 +29,7 @@ public static unsafe partial class GD
         PackedScene.GdLoad();
         // Nodes
         Node.GdLoad();
+        Node3D.GdLoad();
     }
 
     internal static Variant InvokeVariant(void* methodPtr, void* instance, Span<Variant> variants,
