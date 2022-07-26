@@ -79,12 +79,18 @@ public static class NodeExtension
     {
         GD.Node.SetName(t.Pointer, name);
     }
-    
+
     public static void AddChild<T, TNode>(this T t, TNode node, bool legitUniqueName = false,
         GD.Node.InternalMode internalMode = default)
         where T : GD.INode
         where TNode : GD.INode
     {
         GD.Node.AddChild(t.Pointer, node.Pointer, legitUniqueName, internalMode);
+    }
+
+    public static TTo To<TTo>(this GD.Node t)
+        where TTo : struct, GD.INode
+    {
+        return Unsafe.As<GD.Node, TTo>(ref t);
     }
 }
