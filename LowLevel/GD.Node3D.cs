@@ -8,7 +8,7 @@ namespace GodotCLR;
 
 public partial class GD
 {
-    public interface INode3D : IObject
+    public interface INode3D : INode
     {
     }
 
