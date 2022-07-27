@@ -32,7 +32,7 @@ public static unsafe class UtilityFunctions
         {
             sbyte* ptr(Utf8Array array)
             {
-                return (sbyte*) Unsafe.AsPointer(ref MemoryMarshal.GetReference(array.ByteSpan));
+                return (sbyte*) Unsafe.AsPointer(ref MemoryMarshal.GetReference(array.ByteSpanWithNull));
             }
             
             using var utf8 = new Utf8Array(name);

@@ -67,11 +67,19 @@ public unsafe struct Variant
 
     [FieldOffset(8)] public byte Union;
 
+    private void AssertType(EType target)
+    {
+        if (Type == target)
+            return;
+
+        throw new InvalidOperationException($"type:{Type} != target:{target}");
+    }
+
     public ref bool Bool
     {
         get
         {
-            Debug.Assert(Type == EType.BOOL, "Type == EType.BOOL");
+            AssertType(EType.BOOL);
             return ref Unsafe.AsRef<bool>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -80,7 +88,7 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.INT, "Type == EType.INT");
+            AssertType(EType.INT);
             return ref Unsafe.AsRef<long>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -89,7 +97,7 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.FLOAT, "Type == EType.FLOAT");
+            AssertType(EType.FLOAT);
             return ref Unsafe.AsRef<double>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -98,7 +106,7 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.VECTOR2, "Type == EType.VECTOR2");
+            AssertType(EType.VECTOR2);
             return ref Unsafe.AsRef<Vector2>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -107,7 +115,7 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.VECTOR3, "Type == EType.VECTOR3");
+            AssertType(EType.VECTOR3);
             return ref Unsafe.AsRef<Vector3>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -116,7 +124,7 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.QUATERNION, "Type == EType.QUATERNION");
+            AssertType(EType.QUATERNION);
             return ref Unsafe.AsRef<Quaternion>(Unsafe.AsPointer(ref Union));
         }
     }
@@ -125,12 +133,12 @@ public unsafe struct Variant
     {
         get
         {
-            Debug.Assert(Type == EType.OBJECT, "Type == EType.OBJECT");
+            AssertType(EType.OBJECT);
             return Unsafe.AsRef<ObjectData>(Unsafe.AsPointer(ref Union)).Pointer;
         }
         set
         {
-            Debug.Assert(Type == EType.OBJECT, "Type == EType.OBJECT");
+            AssertType(EType.OBJECT);
             ref var data = ref Unsafe.AsRef<ObjectData>(Unsafe.AsPointer(ref Union));
             data.Id = Native.Interface.object_get_instance_id(value.ToPointer());
             data.Pointer = value;
@@ -183,6 +191,48 @@ public unsafe struct Variant
     public Variant(ReadOnlySpan<char> span)
     {
         SetString(span);
+    }
+    
+    public Variant(bool v)
+    {
+        Type = EType.BOOL;
+        Bool = v;
+    }
+    
+    public Variant(long v)
+    {
+        Type = EType.INT;
+        Int = v;
+    }
+    
+    public Variant(double v)
+    {
+        Type = EType.FLOAT;
+        Float = v;
+    }
+
+    public Variant(Vector2 v)
+    {
+        Type = EType.VECTOR2;
+        Vector2 = v;
+    }
+    
+    public Variant(Vector3 v)
+    {
+        Type = EType.VECTOR3;
+        Vector3 = v;
+    }
+    
+    public Variant(Quaternion v)
+    {
+        Type = EType.QUATERNION;
+        Quaternion = v;
+    }
+    
+    public Variant(IntPtr v)
+    {
+        Type = EType.OBJECT;
+        Object = v;
     }
 }
 

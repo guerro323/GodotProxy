@@ -173,13 +173,13 @@ public static unsafe partial class GD
 
         var data = (ClassData*) NativeMemory.Alloc((nuint) sizeof(ClassData));
         data->Size = (nuint) sizeof(T);
-        data->ParentName = (sbyte*) NativeMemory.Alloc((nuint) parentNameUtf8.ByteSpan.Length);
+        data->ParentName = (sbyte*) NativeMemory.Alloc((nuint) parentNameUtf8.ByteSpanWithNull.Length);
         {
-            parentNameUtf8.ByteSpan.CopyTo(new Span<byte>(data->ParentName, parentNameUtf8.ByteSpan.Length));
+            parentNameUtf8.ByteSpanWithNull.CopyTo(new Span<byte>(data->ParentName, parentNameUtf8.ByteSpanWithNull.Length));
         }
-        data->Name = (sbyte*) NativeMemory.Alloc((nuint) nameUtf8.ByteSpan.Length);
+        data->Name = (sbyte*) NativeMemory.Alloc((nuint) nameUtf8.ByteSpanWithNull.Length);
         {
-            nameUtf8.ByteSpan.CopyTo(new Span<byte>(data->Name, nameUtf8.ByteSpan.Length));
+            nameUtf8.ByteSpanWithNull.CopyTo(new Span<byte>(data->Name, nameUtf8.ByteSpanWithNull.Length));
         }
 
         var classInfo = new GDNativeExtensionClassCreationInfo

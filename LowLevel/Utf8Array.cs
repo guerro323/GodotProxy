@@ -16,7 +16,9 @@ namespace GodotCLR
             var encoding = Encoding.UTF8;
 
             _byteCount = encoding.GetByteCount(original);
-            _array = ArrayPool<byte>.Shared.Rent(_byteCount + 2);
+            _array = ArrayPool<byte>.Shared.Rent(_byteCount + 4);
+            _array[_byteCount +3] = 0;
+            _array[_byteCount +2] = 0;
             _array[_byteCount +1] = 0;
             _array[_byteCount +0] = 0;
 
@@ -25,6 +27,7 @@ namespace GodotCLR
 
         public Span<char> CharSpan => MemoryMarshal.Cast<byte, char>(ByteSpan);
         public Span<byte> ByteSpan => _array.AsSpan(0, _byteCount);
+        public Span<byte> ByteSpanWithNull => _array.AsSpan(0, _byteCount + 4);
 
         public unsafe ref char FirstChar => ref Unsafe.As<byte, char>(ref MemoryMarshal.GetArrayDataReference(_array));
         public unsafe void* Pointer => Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(_array));
