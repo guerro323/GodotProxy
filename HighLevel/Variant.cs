@@ -145,6 +145,13 @@ public unsafe struct Variant
         }
     }
 
+    public godot_string GetGodotStringUnsafe()
+    {
+        AssertType(EType.STRING);
+        ref var gdString = ref Unsafe.As<byte, godot_string>(ref Union);
+        return gdString;
+    }
+
     public struct ObjectData
     {
         public nuint Id;
@@ -313,6 +320,8 @@ public static class VariantExtension
     // ref: https://github.com/godotengine/godot/blob/9e3733612461d9cf9edb19ab29244b0834e2d1b1/core/string/ustring.h#L183
     public static unsafe string AsString(this Variant variant)
     {
+        return variant.GetGodotStringUnsafe().ToString();
+    
         using var chars = AsPooledCharArray(variant);
         return new string(chars.AsSpan());
     }
