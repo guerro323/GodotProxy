@@ -35,8 +35,8 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            reference = GetMethodBind(ClassName, nameof(reference), 135338150);
-            unreference = GetMethodBind(ClassName, nameof(unreference), 135338150);
+            reference = GetMethodBind(ClassName, nameof(reference), 2240911060);
+            unreference = GetMethodBind(ClassName, nameof(unreference), 2240911060);
         }
     }
 

@@ -25,8 +25,8 @@ public partial class GD
             ReadOnlySpan<char> typeHint = default,
             CacheMode cacheMode = CacheMode.Ignore)
         {
-            using var pathGdString = new godot_string(path);
-            using var typeHintGdString = new godot_string(typeHint);
+            var pathGdString = new godot_string(path);
+            var typeHintGdString = new godot_string(typeHint);
             return new Resource(InvokePtr<IntPtr>(load, singleton, stackalloc nuint[]
             {
                 (nuint) (&pathGdString),
@@ -38,7 +38,7 @@ public partial class GD
         internal static void GdLoad()
         {
             singleton = Native.GetSingleton(nameof(ResourceLoader));
-            load = GetMethodBind(ClassName, nameof(load), 1479995216);
+            load = GetMethodBind(ClassName, nameof(load), 2622212233);
         }
     }
 }

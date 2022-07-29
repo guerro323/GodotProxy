@@ -48,7 +48,7 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            instantiate = GetMethodBind(ClassName, nameof(instantiate), 2590297044);
+            instantiate = GetMethodBind(ClassName, nameof(instantiate), 2628778455);
         }
     }
 }

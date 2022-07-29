@@ -66,8 +66,8 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            add_child = GetMethodBind(ClassName, nameof(add_child), 182667338);
-            set_name = GetMethodBind(ClassName, nameof(set_name), 134188166);
+            add_child = GetMethodBind(ClassName, nameof(add_child), 3070154285);
+            set_name = GetMethodBind(ClassName, nameof(set_name), 83702148);
         }
     }
 }

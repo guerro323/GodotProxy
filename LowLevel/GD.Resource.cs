@@ -53,8 +53,8 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            duplicate = GetMethodBind(ClassName, nameof(duplicate), 172413545);
-            set_name = GetMethodBind(ClassName, nameof(set_name), 134188166);
+            duplicate = GetMethodBind(ClassName, nameof(duplicate), 482882304);
+            set_name = GetMethodBind(ClassName, nameof(set_name), 83702148);
         }
     }
 }

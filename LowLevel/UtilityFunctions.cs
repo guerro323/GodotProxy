@@ -12,8 +12,8 @@ public static unsafe class UtilityFunctions
 
     private static readonly Dictionary<string, (long hash, bool isVarArg)> Methods = new()
     {
-        {"print", (2086509575, true)}
-        //{"print", (2648703342, true)}
+        //{"print", (2086509575, true)}
+        {"print", (2648703342, true)}
     };
 
     public static void Load()
@@ -38,7 +38,7 @@ public static unsafe class UtilityFunctions
             using var utf8 = new Utf8Array(name);
             return (delegate*unmanaged[Cdecl]<out Variant, Variant**, int, void>) getDelegate(
                 ptr(utf8),
-                Methods[name].hash
+                (nint) Methods[name].hash
             );
         }
         

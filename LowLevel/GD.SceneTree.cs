@@ -17,7 +17,7 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            get_current_scene = GetMethodBind(ClassName, nameof(get_current_scene), 135338183);
+            get_current_scene = GetMethodBind(ClassName, nameof(get_current_scene), 3160264692);
         }
     }
 }

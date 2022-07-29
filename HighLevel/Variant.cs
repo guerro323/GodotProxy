@@ -32,11 +32,14 @@ public unsafe struct Variant
         VECTOR3,
         VECTOR3I,
         TRANSFORM2D,
+        VECTOR4,
+        VECTOR4I,
         PLANE,
         QUATERNION,
         AABB,
         BASIS,
         TRANSFORM3D,
+        PROJECTION,
 
         // misc types
         COLOR,

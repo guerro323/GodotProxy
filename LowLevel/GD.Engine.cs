@@ -19,7 +19,7 @@ public partial class GD
         internal static void GdLoad()
         {
             singleton = Native.GetSingleton(nameof(Engine));
-            get_main_loop = GetMethodBind(ClassName, nameof(get_main_loop), 135338183);
+            get_main_loop = GetMethodBind(ClassName, nameof(get_main_loop), 1016888095);
         }
     }
 }

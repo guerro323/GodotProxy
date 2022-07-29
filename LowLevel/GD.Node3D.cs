@@ -45,8 +45,8 @@ public partial class GD
 
         internal static void GdLoad()
         {
-            get_position = GetMethodBind(ClassName, nameof(get_position), 135338183);
-            set_position = GetMethodBind(ClassName, nameof(set_position), 134188166);
+            get_position = GetMethodBind(ClassName, nameof(get_position), 3360562783);
+            set_position = GetMethodBind(ClassName, nameof(set_position), 3460891852);
         }
     }
 }
